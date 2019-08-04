@@ -1,75 +1,98 @@
 const express = require('express');
 const router = express.Router();
+const movieModel = require('../mongo-db');
+// const movies = [
+//     {id:0,name:'3 idiots',genres:'life'},
+//     {id:1,name:'Ashi hi ashiqui',genres:'love'},
+//     {id:2,name:'bahubali',genres:'action'},
+// ]
 
-const movies = [
-    {id:0,name:'3 idiots',genres:'life'},
-    {id:1,name:'Ashi hi ashiqui',genres:'love'},
-    {id:2,name:'bahubali',genres:'action'},
-]
+async function getAllMovies(){
+    return await movieModel.find();
+}
+
+async function getMovieById(id){
+    return await movieModel.findById(id);
+}
+
+async function deleteMovieById(id){
+    return await movieModel.deleteOne({_id:id});
+}
+
+async function updateCource(id,body){
+    return await movieModel.findByIdAndUpdate({_id:id},
+        {$set:body},{new:true})
+}
+
 
 //Get mapping to get all moveies
-router.get('/',(req,res)=>{
-    res.send(movies);
+router.get('/',async (req,res)=>{
+    try{
+        const movies = await getAllMovies();
+        res.send(movies);
+    }catch(err){
+        res.status(404).send(err.message);
+    }
+    
 });
 
 //Get mapping to get specific movies
-router.get('/:id',(req,res)=>{
-    const movie = getSpecificMovies(req.params.id);
-    if(!movie){
-        res.status(404).send('movie not found');
-    }else{
-        res.send(movie)
+router.get('/:id',async (req,res)=>{
+    try{
+        const movie = await getMovieById(req.params.id);
+        res.send(movie);
+    }catch(err){
+        res.status(404).send(err.message);
     }
 });
 
 //Post mapping 
-router.post('/',(req,res)=>{
+router.post('/',async (req,res)=>{
     const input = inputValidation(req);
+    let movie;
     if(input){
-        const movie = {
-            id: movies.length +1,
+        movie = new movieModel({
             name:req.body.name,
-            genres:req.body.genres
-        } 
-        movies.push(movie);
-        res.send(movie);
-    }else{
-        res.send('Please send a valid movie')
+            author:req.body.author,
+            tags:req.body.tags,
+            isPublish:req.body.isPublish,
+        })
+    }
+    else{
+        res.status(404).send('Please send a valid movie');
+    }
+
+    try{
+        const newMovie = await movie.save();
+        res.send(newMovie);
+    }
+    catch(err){
+        res.status(404).send(err.message);
     }
 });
 
 //Put mapping
-router.put('/:id',(req,res)=>{
-    let movie = getSpecificMovies(req.params.id);
-    if(!movie){
-        res.status(404).send('Movies not found')
-    }else{
-        movie.name = req.body.name;
-        movie.genres = req.body.genres;
-        res.send(movie);
+router.put('/:id',async (req,res)=>{
+    try{
+      if(req.body){
+       const updatedCource = await updateCource(req.params.id,req.body);
+       res.send(updatedCource);
+      }
+    }catch(error){
+        res.status(404).send(`${req.params.id} ${error.message}`);
     }
 })
 
 //Delete mapping
-router.delete('/:id',(req,res)=>{
-   const movie = getSpecificMovies(req.params.id);
-   if(movie){
-       const index = movies.indexOf(movie);
-       movies.splice(index,1);
-       res.send(movie);
-   }else{
-       sendStatus(404,res);
+router.delete('/:id',async (req,res)=>{
+    try{
+       await deleteMovieById(req.params.id);
+       res.send(`Movie with id ${req.params.id} deleted sucessfully`)
+   }catch(err){
+        res.status(404).send(err.message)
    }
 });
 
-//Find movies with id
-const getSpecificMovies = (id)=>{
-     return movies.find(m=> m.id === parseInt(id)); 
-};
-
-const sendStatus =(status,res)=>{
-    res.status(status).send(`${status} movie is not found`)
-}
 
 //Custom input validation
 const inputValidation = (req)=>{
