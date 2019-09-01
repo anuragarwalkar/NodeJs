@@ -6,9 +6,11 @@ const morgan = require('morgan');
 const logger = require('./middleware/logger');
 const auth = require('./middleware/auth');
 const helmet = require('helmet');
-const movies = require('./routes/movies');
+// const movies = require('./routes/movies');
 const cors = require('cors');
 // const home = require('./routes/home');
+const vidly = require('./routes/vidly');
+const users = require('./routes/users');
 const app = express();
 app.use(cors());
 
@@ -25,8 +27,10 @@ app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 app.use(express.static('public'));
 app.use(helmet());
-app.use('/api/movies',movies);
+// app.use('/api/movies',movies);
 // app.use('/',home);
+app.use('/api/vidly',vidly);
+app.use('/api/user',users);
 if(app.get('env')==='development'){
     debug('Morgan enabled...')
     app.use(morgan('tiny'));

@@ -1,11 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const movieModel = require('../mongo-db');
-// const movies = [
-//     {id:0,name:'3 idiots',genres:'life'},
-//     {id:1,name:'Ashi hi ashiqui',genres:'love'},
-//     {id:2,name:'bahubali',genres:'action'},
-// ]
+const movieModel = require('../mongo-db-movies');
 
 async function getAllMovies(){
     return await movieModel.find();
