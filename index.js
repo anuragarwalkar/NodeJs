@@ -7,8 +7,10 @@ const logger = require('./middleware/logger');
 const auth = require('./middleware/auth');
 const helmet = require('helmet');
 const movies = require('./routes/movies');
+const cors = require('cors');
 // const home = require('./routes/home');
 const app = express();
+app.use(cors());
 
 //Configuration 
 console.log(config.get('name'));
