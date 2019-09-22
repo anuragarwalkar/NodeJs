@@ -1,6 +1,7 @@
 const express = require('express');
+const auth = require('../middleware/auth');
 const router = express.Router();
-const movieModel = require('../mongo-db-movies');
+const movieModel = require('../models/movies');
 
 async function getAllMovies(){
     return await movieModel.find();
@@ -42,7 +43,7 @@ router.get('/:id',async (req,res)=>{
 });
 
 //Post mapping 
-router.post('/',async (req,res)=>{
+router.post('/',auth,async (req,res)=>{
     const input = inputValidation(req);
     let movie;
     if(input){
